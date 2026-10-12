@@ -1,0 +1,838 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyNQ7J3QIXK+pHOqS8tI9TWI",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/Arsen-Almasov/Arsen-Almasov/blob/main/5%D0%BF%D1%80%D0%B0%D0%BA%D1%82%D0%B8%D0%BA%D0%B0\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "mnYY2rNEHL3u"
+      },
+      "outputs": [],
+      "source": []
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "Gx4wClBQH0Ty"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "import re\n",
+        "\n",
+        "df = pd.read_csv(\"/content/reviews_sentiment_ru_600.csv\")\n",
+        "\n",
+        "print(\"Размер датасета:\", df.shape)\n",
+        "print(\"\\nПервые 5 отзывов:\")\n",
+        "display(df.head())\n",
+        "\n",
+        "print(\"\\nКоличество примеров каждого класса:\")\n",
+        "print(df[\"label\"].value_counts())\n",
+        "\n",
+        "print(\"\\nПропущенные значения:\")\n",
+        "print(df.isnull().sum())\n",
+        "\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 466
+        },
+        "id": "QjYgsRo-HOfs",
+        "outputId": "1c1acbfb-8625-465b-bd06-b9d1cbbf0ef4"
+      },
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Размер датасета: (600, 2)\n",
+            "\n",
+            "Первые 5 отзывов:\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "                                                text     label\n",
+              "0  В целом порадовал, потому что качество отлично...  positive\n",
+              "1  Мой отзыв: покупка. Поддержка не помогла. Повт...  negative\n",
+              "2  Кофе: качество оказалось низким. заказом недов...  negative\n",
+              "3  Ноутбук: всё пришло вовремя. в целом порадовал...  positive\n",
+              "4  Заказ: всё соответствует описанию. покупкой до...  positive"
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-78046427-5e6d-461f-9693-58b16f08cf23\" class=\"colab-df-container\">\n",
+              "    <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>text</th>\n",
+              "      <th>label</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>В целом порадовал, потому что качество отлично...</td>\n",
+              "      <td>positive</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>Мой отзыв: покупка. Поддержка не помогла. Повт...</td>\n",
+              "      <td>negative</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>Кофе: качество оказалось низким. заказом недов...</td>\n",
+              "      <td>negative</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>Ноутбук: всё пришло вовремя. в целом порадовал...</td>\n",
+              "      <td>positive</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>Заказ: всё соответствует описанию. покупкой до...</td>\n",
+              "      <td>positive</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "    <div class=\"colab-df-buttons\">\n",
+              "\n",
+              "  <div class=\"colab-df-container\">\n",
+              "    <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-78046427-5e6d-461f-9693-58b16f08cf23')\"\n",
+              "            title=\"Convert this dataframe to an interactive table.\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\">\n",
+              "    <path d=\"M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z\"/>\n",
+              "  </svg>\n",
+              "    </button>\n",
+              "\n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-buttons div {\n",
+              "      margin-bottom: 4px;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "    <script>\n",
+              "      const buttonEl =\n",
+              "        document.querySelector('#df-78046427-5e6d-461f-9693-58b16f08cf23 button.colab-df-convert');\n",
+              "      buttonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "      async function convertToInteractive(key) {\n",
+              "        const element = document.querySelector('#df-78046427-5e6d-461f-9693-58b16f08cf23');\n",
+              "        const dataTable =\n",
+              "          await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                    [key], {});\n",
+              "        if (!dataTable) return;\n",
+              "\n",
+              "        const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "          '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "          + ' to learn more about interactive tables.';\n",
+              "        element.innerHTML = '';\n",
+              "        dataTable['output_type'] = 'display_data';\n",
+              "        await google.colab.output.renderOutput(dataTable, element);\n",
+              "        const docLink = document.createElement('div');\n",
+              "        docLink.innerHTML = docLinkHtml;\n",
+              "        element.appendChild(docLink);\n",
+              "      }\n",
+              "    </script>\n",
+              "  </div>\n",
+              "\n",
+              "\n",
+              "    </div>\n",
+              "  </div>\n"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "dataframe",
+              "summary": "{\n  \"name\": \"print(df\",\n  \"rows\": 5,\n  \"fields\": [\n    {\n      \"column\": \"text\",\n      \"properties\": {\n        \"dtype\": \"string\",\n        \"num_unique_values\": 5,\n        \"samples\": [\n          \"\\u041c\\u043e\\u0439 \\u043e\\u0442\\u0437\\u044b\\u0432: \\u043f\\u043e\\u043a\\u0443\\u043f\\u043a\\u0430. \\u041f\\u043e\\u0434\\u0434\\u0435\\u0440\\u0436\\u043a\\u0430 \\u043d\\u0435 \\u043f\\u043e\\u043c\\u043e\\u0433\\u043b\\u0430. \\u041f\\u043e\\u0432\\u0442\\u043e\\u0440\\u043d\\u043e \\u0437\\u0430\\u043a\\u0430\\u0437\\u044b\\u0432\\u0430\\u0442\\u044c \\u043d\\u0435 \\u0431\\u0443\\u0434\\u0443.\",\n          \"\\u0417\\u0430\\u043a\\u0430\\u0437: \\u0432\\u0441\\u0451 \\u0441\\u043e\\u043e\\u0442\\u0432\\u0435\\u0442\\u0441\\u0442\\u0432\\u0443\\u0435\\u0442 \\u043e\\u043f\\u0438\\u0441\\u0430\\u043d\\u0438\\u044e. \\u043f\\u043e\\u043a\\u0443\\u043f\\u043a\\u043e\\u0439 \\u0434\\u043e\\u0432\\u043e\\u043b\\u0435\\u043d. \\u041e\\u0431\\u044f\\u0437\\u0430\\u0442\\u0435\\u043b\\u044c\\u043d\\u043e \\u0432\\u043e\\u0441\\u043f\\u043e\\u043b\\u044c\\u0437\\u0443\\u044e\\u0441\\u044c \\u0441\\u043d\\u043e\\u0432\\u0430.\",\n          \"\\u041a\\u043e\\u0444\\u0435: \\u043a\\u0430\\u0447\\u0435\\u0441\\u0442\\u0432\\u043e \\u043e\\u043a\\u0430\\u0437\\u0430\\u043b\\u043e\\u0441\\u044c \\u043d\\u0438\\u0437\\u043a\\u0438\\u043c. \\u0437\\u0430\\u043a\\u0430\\u0437\\u043e\\u043c \\u043d\\u0435\\u0434\\u043e\\u0432\\u043e\\u043b\\u0435\\u043d. \\u041f\\u043e\\u0432\\u0442\\u043e\\u0440\\u043d\\u043e \\u0437\\u0430\\u043a\\u0430\\u0437\\u044b\\u0432\\u0430\\u0442\\u044c \\u043d\\u0435 \\u0431\\u0443\\u0434\\u0443.\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"label\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 2,\n        \"samples\": [\n          \"negative\",\n          \"positive\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    }\n  ]\n}"
+            }
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "Количество примеров каждого класса:\n",
+            "label\n",
+            "positive    200\n",
+            "negative    200\n",
+            "neutral     200\n",
+            "Name: count, dtype: int64\n",
+            "\n",
+            "Пропущенные значения:\n",
+            "text     0\n",
+            "label    0\n",
+            "dtype: int64\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer\n",
+        "from sklearn.naive_bayes import MultinomialNB\n",
+        "from sklearn.metrics import accuracy_score, f1_score\n",
+        "from sklearn.metrics import classification_report, confusion_matrix\n",
+        "import matplotlib.pyplot as plt\n",
+        "\n",
+        "print(\"Все необходимые библиотеки подключены.\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "JMrL84uoH5RZ",
+        "outputId": "1a4f4113-a891-4046-f887-f8c4a441878b"
+      },
+      "execution_count": 3,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Все необходимые библиотеки подключены.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "stop_words = {\n",
+        "    \"и\", \"в\", \"во\", \"на\", \"по\", \"за\", \"к\", \"ко\", \"с\", \"со\",\n",
+        "    \"у\", \"о\", \"об\", \"от\", \"до\", \"для\", \"из\", \"при\", \"про\",\n",
+        "    \"а\", \"но\", \"или\", \"что\", \"это\", \"как\", \"так\", \"же\",\n",
+        "    \"бы\", \"ли\", \"мне\", \"мой\", \"моя\", \"мое\", \"мои\",\n",
+        "    \"мы\", \"вы\", \"они\", \"он\", \"она\", \"оно\", \"я\",\n",
+        "    \"все\", \"всё\", \"был\", \"была\", \"были\", \"быть\"\n",
+        "}\n",
+        "\n",
+        "def clean_text(text):\n",
+        "    text = str(text).lower()\n",
+        "    text = re.sub(r\"\\d+\", \" \", text)\n",
+        "    text = re.sub(r\"[^\\w\\s]\", \" \", text)\n",
+        "    text = re.sub(r\"_+\", \" \", text)\n",
+        "    words = text.split()\n",
+        "    words = [word for word in words if word not in stop_words]\n",
+        "    return \" \".join(words)\n",
+        "\n",
+        "df[\"clean_text\"] = df[\"text\"].apply(clean_text)\n",
+        "\n",
+        "print(\"Пример исходного текста:\")\n",
+        "print(df[\"text\"].iloc[0])\n",
+        "\n",
+        "print(\"\\nПосле предобработки:\")\n",
+        "print(df[\"clean_text\"].iloc[0])\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "XMFAw2psIBmp",
+        "outputId": "1661b348-ebc3-4afb-d4cd-15e9383c307e"
+      },
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Пример исходного текста:\n",
+            "В целом порадовал, потому что качество отличное. Доставка. Обязательно воспользуюсь снова.\n",
+            "\n",
+            "После предобработки:\n",
+            "целом порадовал потому качество отличное доставка обязательно воспользуюсь снова\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "X = df[\"clean_text\"]\n",
+        "y = df[\"label\"]\n",
+        "\n",
+        "X_train, X_test, y_train, y_test = train_test_split(\n",
+        "    X,\n",
+        "    y,\n",
+        "    test_size=0.2,\n",
+        "    random_state=42,\n",
+        "    stratify=y\n",
+        ")\n",
+        "\n",
+        "print(\"Обучающих текстов:\", len(X_train))\n",
+        "print(\"Тестовых текстов:\", len(X_test))\n",
+        "\n",
+        "print(\"\\nКлассы в обучающей выборке:\")\n",
+        "print(y_train.value_counts())\n",
+        "\n",
+        "print(\"\\nКлассы в тестовой выборке:\")\n",
+        "print(y_test.value_counts())\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "YsHpVb8MIJAz",
+        "outputId": "2ea8c808-21ff-43fc-b79e-b2f0183d51a5"
+      },
+      "execution_count": 5,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Обучающих текстов: 480\n",
+            "Тестовых текстов: 120\n",
+            "\n",
+            "Классы в обучающей выборке:\n",
+            "label\n",
+            "positive    160\n",
+            "negative    160\n",
+            "neutral     160\n",
+            "Name: count, dtype: int64\n",
+            "\n",
+            "Классы в тестовой выборке:\n",
+            "label\n",
+            "negative    40\n",
+            "neutral     40\n",
+            "positive    40\n",
+            "Name: count, dtype: int64\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "count_vectorizer = CountVectorizer(\n",
+        "    min_df=2,\n",
+        "    max_df=0.95\n",
+        ")\n",
+        "\n",
+        "X_train_count = count_vectorizer.fit_transform(X_train)\n",
+        "X_test_count = count_vectorizer.transform(X_test)\n",
+        "\n",
+        "print(\"Размер обучающей матрицы:\", X_train_count.shape)\n",
+        "print(\"Размер тестовой матрицы:\", X_test_count.shape)\n",
+        "print(\"Количество признаков:\",\n",
+        "      len(count_vectorizer.get_feature_names_out()))\n",
+        "\n",
+        "print(\"\\nПримеры слов из словаря:\")\n",
+        "print(count_vectorizer.get_feature_names_out()[:20])\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "DLrA9osaINDs",
+        "outputId": "62c0b2c7-1c62-419b-d183-bd97d1c11181"
+      },
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Размер обучающей матрицы: (480, 100)\n",
+            "Размер тестовой матрицы: (120, 100)\n",
+            "Количество признаков: 100\n",
+            "\n",
+            "Примеры слов из словаря:\n",
+            "['аккуратная' 'без' 'большего' 'буду' 'вариант' 'вводит' 'внимательным'\n",
+            " 'вовремя' 'воспользуюсь' 'впечатление' 'гораздо' 'два' 'денег' 'дня'\n",
+            " 'доволен' 'доставка' 'есть' 'заблуждение' 'задач' 'заказ']\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "model_count = MultinomialNB()\n",
+        "\n",
+        "model_count.fit(X_train_count, y_train)\n",
+        "\n",
+        "pred_count = model_count.predict(X_test_count)\n",
+        "\n",
+        "accuracy_count = accuracy_score(y_test, pred_count)\n",
+        "f1_count = f1_score(\n",
+        "    y_test, pred_count, average=\"macro\"\n",
+        ")\n",
+        "\n",
+        "print(\"CountVectorizer + MultinomialNB\")\n",
+        "print(\"Accuracy:\", round(accuracy_count, 4))\n",
+        "print(\"Macro F1:\", round(f1_count, 4))\n"
+      ],
+      "metadata": {
+        "id": "NEGJd65KISBz"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "tfidf_vectorizer = TfidfVectorizer(\n",
+        "    min_df=2,\n",
+        "    max_df=0.95\n",
+        ")\n",
+        "\n",
+        "X_train_tfidf = tfidf_vectorizer.fit_transform(X_train)\n",
+        "X_test_tfidf = tfidf_vectorizer.transform(X_test)\n",
+        "\n",
+        "print(\"Размер обучающей матрицы:\", X_train_tfidf.shape)\n",
+        "print(\"Размер тестовой матрицы:\", X_test_tfidf.shape)\n",
+        "print(\"Количество признаков:\",\n",
+        "      len(tfidf_vectorizer.get_feature_names_out()))\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "gNBi3frOITRR",
+        "outputId": "51c3cf42-d28b-4a54-f036-22c96538e1cb"
+      },
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Размер обучающей матрицы: (480, 100)\n",
+            "Размер тестовой матрицы: (120, 100)\n",
+            "Количество признаков: 100\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "model_tfidf = MultinomialNB()\n",
+        "\n",
+        "model_tfidf.fit(X_train_tfidf, y_train)\n",
+        "\n",
+        "pred_tfidf = model_tfidf.predict(X_test_tfidf)\n",
+        "\n",
+        "accuracy_tfidf = accuracy_score(y_test, pred_tfidf)\n",
+        "f1_tfidf = f1_score(\n",
+        "    y_test, pred_tfidf, average=\"macro\"\n",
+        ")\n",
+        "\n",
+        "print(\"TF-IDF + MultinomialNB\")\n",
+        "print(\"Accuracy:\", round(accuracy_tfidf, 4))\n",
+        "print(\"Macro F1:\", round(f1_tfidf, 4))\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "6hBzzNKkIbGq",
+        "outputId": "11f3624a-29c5-4f7e-a9da-023631fe7f48"
+      },
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "TF-IDF + MultinomialNB\n",
+            "Accuracy: 1.0\n",
+            "Macro F1: 1.0\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "results = pd.DataFrame({\n",
+        "    \"Метод\": [\"CountVectorizer\", \"TfidfVectorizer\"],\n",
+        "    \"Accuracy\": [accuracy_count, accuracy_tfidf],\n",
+        "    \"Macro F1\": [f1_count, f1_tfidf]\n",
+        "})\n",
+        "\n",
+        "display(results.round(4))\n",
+        "\n",
+        "best_f1 = results.loc[results[\"Macro F1\"].idxmax()]\n",
+        "\n",
+        "print(\"\\nЛучший метод по Macro F1:\", best_f1[\"Метод\"])\n",
+        "print(\"Его Macro F1:\", round(best_f1[\"Macro F1\"], 4))\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 211
+        },
+        "id": "0YgifwPjIfYi",
+        "outputId": "0e4d9e20-a276-4e2b-fc44-29538dd00f8a"
+      },
+      "execution_count": 9,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "NameError",
+          "evalue": "name 'accuracy_count' is not defined",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m/tmp/ipykernel_1714/4222564355.py\u001b[0m in \u001b[0;36m<cell line: 0>\u001b[0;34m()\u001b[0m\n\u001b[1;32m      1\u001b[0m results = pd.DataFrame({\n\u001b[1;32m      2\u001b[0m     \u001b[0;34m\"Метод\"\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0;34m\"CountVectorizer\"\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m\"TfidfVectorizer\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 3\u001b[0;31m     \u001b[0;34m\"Accuracy\"\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0maccuracy_count\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0maccuracy_tfidf\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      4\u001b[0m     \u001b[0;34m\"Macro F1\"\u001b[0m\u001b[0;34m:\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0mf1_count\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mf1_tfidf\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      5\u001b[0m })\n",
+            "\u001b[0;31mNameError\u001b[0m: name 'accuracy_count' is not defined"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "print(classification_report(\n",
+        "    y_test,\n",
+        "    pred_tfidf,\n",
+        "    labels=[\"negative\", \"neutral\", \"positive\"],\n",
+        "    zero_division=0\n",
+        "))\n",
+        "\n",
+        "cm = confusion_matrix(\n",
+        "    y_test,\n",
+        "    pred_tfidf,\n",
+        "    labels=[\"negative\", \"neutral\", \"positive\"]\n",
+        ")\n",
+        "\n",
+        "print(\"Матрица ошибок:\")\n",
+        "display(pd.DataFrame(\n",
+        "    cm,\n",
+        "    index=[\"Факт: negative\", \"Факт: neutral\", \"Факт: positive\"],\n",
+        "    columns=[\"Прогноз: negative\", \"Прогноз: neutral\", \"Прогноз: positive\"]\n",
+        "))\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 334
+        },
+        "id": "T6Ne1zP8IhNq",
+        "outputId": "39a5e4ed-209c-475b-eb17-cf9c47e24466"
+      },
+      "execution_count": 10,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "              precision    recall  f1-score   support\n",
+            "\n",
+            "    negative       1.00      1.00      1.00        40\n",
+            "     neutral       1.00      1.00      1.00        40\n",
+            "    positive       1.00      1.00      1.00        40\n",
+            "\n",
+            "    accuracy                           1.00       120\n",
+            "   macro avg       1.00      1.00      1.00       120\n",
+            "weighted avg       1.00      1.00      1.00       120\n",
+            "\n",
+            "Матрица ошибок:\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "                Прогноз: negative  Прогноз: neutral  Прогноз: positive\n",
+              "Факт: negative                 40                 0                  0\n",
+              "Факт: neutral                   0                40                  0\n",
+              "Факт: positive                  0                 0                 40"
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-db9decdd-b630-4632-b3d2-c068a2b6d6d3\" class=\"colab-df-container\">\n",
+              "    <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Прогноз: negative</th>\n",
+              "      <th>Прогноз: neutral</th>\n",
+              "      <th>Прогноз: positive</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>Факт: negative</th>\n",
+              "      <td>40</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>Факт: neutral</th>\n",
+              "      <td>0</td>\n",
+              "      <td>40</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>Факт: positive</th>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>40</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "    <div class=\"colab-df-buttons\">\n",
+              "\n",
+              "  <div class=\"colab-df-container\">\n",
+              "    <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-db9decdd-b630-4632-b3d2-c068a2b6d6d3')\"\n",
+              "            title=\"Convert this dataframe to an interactive table.\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\">\n",
+              "    <path d=\"M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z\"/>\n",
+              "  </svg>\n",
+              "    </button>\n",
+              "\n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-buttons div {\n",
+              "      margin-bottom: 4px;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "    <script>\n",
+              "      const buttonEl =\n",
+              "        document.querySelector('#df-db9decdd-b630-4632-b3d2-c068a2b6d6d3 button.colab-df-convert');\n",
+              "      buttonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "      async function convertToInteractive(key) {\n",
+              "        const element = document.querySelector('#df-db9decdd-b630-4632-b3d2-c068a2b6d6d3');\n",
+              "        const dataTable =\n",
+              "          await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                    [key], {});\n",
+              "        if (!dataTable) return;\n",
+              "\n",
+              "        const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "          '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "          + ' to learn more about interactive tables.';\n",
+              "        element.innerHTML = '';\n",
+              "        dataTable['output_type'] = 'display_data';\n",
+              "        await google.colab.output.renderOutput(dataTable, element);\n",
+              "        const docLink = document.createElement('div');\n",
+              "        docLink.innerHTML = docLinkHtml;\n",
+              "        element.appendChild(docLink);\n",
+              "      }\n",
+              "    </script>\n",
+              "  </div>\n",
+              "\n",
+              "\n",
+              "    </div>\n",
+              "  </div>\n"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "dataframe",
+              "summary": "{\n  \"name\": \"))\",\n  \"rows\": 3,\n  \"fields\": [\n    {\n      \"column\": \"\\u041f\\u0440\\u043e\\u0433\\u043d\\u043e\\u0437: negative\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 23,\n        \"min\": 0,\n        \"max\": 40,\n        \"num_unique_values\": 2,\n        \"samples\": [\n          0,\n          40\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"\\u041f\\u0440\\u043e\\u0433\\u043d\\u043e\\u0437: neutral\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 23,\n        \"min\": 0,\n        \"max\": 40,\n        \"num_unique_values\": 2,\n        \"samples\": [\n          40,\n          0\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"\\u041f\\u0440\\u043e\\u0433\\u043d\\u043e\\u0437: positive\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 23,\n        \"min\": 0,\n        \"max\": 40,\n        \"num_unique_values\": 2,\n        \"samples\": [\n          40,\n          0\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    }\n  ]\n}"
+            }
+          },
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "errors = pd.DataFrame({\n",
+        "    \"Исходный текст\": df.loc[X_test.index, \"text\"],\n",
+        "    \"Истинный класс\": y_test,\n",
+        "    \"Предсказанный класс\": pred_tfidf\n",
+        "})\n",
+        "\n",
+        "errors = errors[\n",
+        "    errors[\"Истинный класс\"] != errors[\"Предсказанный класс\"]\n",
+        "]\n",
+        "\n",
+        "print(\"Количество ошибок:\", len(errors))\n",
+        "\n",
+        "if len(errors) > 0:\n",
+        "    display(errors.head(5).reset_index(drop=True))\n",
+        "else:\n",
+        "    print(\"На этой тестовой выборке ошибок не найдено.\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Z4Zq-_GcIkRR",
+        "outputId": "9c8a2d65-a433-4da1-90f7-9756851ab643"
+      },
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Количество ошибок: 0\n",
+            "На этой тестовой выборке ошибок не найдено.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "В ходе практической работы выполнена предобработка текстов, построены числовые представления с помощью двух методов векторизации и обучены наивные байесовские классификаторы. Качество оценено по Accuracy и Macro F1. Эксперимент позволил сравнить подходы к представлению текстов и выявить ограничения модели на выбранном учебном корпусе."
+      ],
+      "metadata": {
+        "id": "U7K1-vzoJlN7"
+      }
+    }
+  ]
+}
