@@ -14,3 +14,21 @@ Here are some ideas to get you started:
 - 😄 Pronouns: ...
 - ⚡ Fun fact: ...
 -->
+
+errors = pd.DataFrame({
+    "Исходный текст": df.loc[X_test.index, "text"],
+    "Истинный класс": y_test,
+    "Предсказанный класс": pred_tfidf
+})
+
+errors = errors[
+    errors["Истинный класс"] != errors["Предсказанный класс"]
+]
+
+print("Количество ошибок:", len(errors))
+
+if len(errors) > 0:
+    display(errors.head(5).reset_index(drop=True))
+else:
+    print("На этой тестовой выборке ошибок не найдено.")
+
